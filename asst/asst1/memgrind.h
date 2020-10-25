@@ -1,3 +1,5 @@
+#include "mymalloc.c"
+
 /*
 	This will allocate or free a pointer.
 	It is assumed that everything in [0, pointer_index] is a valid poitner to free.

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include "memgrind.h"
 
 suseconds_t workload_a();
 suseconds_t workload_b();
