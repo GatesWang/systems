@@ -1,0 +1,23 @@
+Workload plan
+
+When choosing to free or allocate we specify three parameters.
+1)free
+2)create
+3)size
+
+The probability that we free a pointer is free / (free + create).
+The probability that we create a pointer is create / (free + create).
+If we create we allocate size memory.
+
+
+D
+For this workload we choose free=7, create=12, and size=1.
+We are much more likely to allocate than free, so we should have many pointers.
+We should not run out of memory since our size is 1.
+
+
+E
+For this workload we choose free=12, create=7, and size=300.
+We are much more likely to free than allocate, so we should have few pointers.
+However, we are allocating large sizes so we will easily run out of memory. 
+

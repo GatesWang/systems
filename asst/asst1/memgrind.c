@@ -2,17 +2,14 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
-#include "malloc.c"
+#include "mymalloc.c"
+#include "memgrind.h"
 
 suseconds_t workload_a();
 suseconds_t workload_b();
 suseconds_t workload_c();
 suseconds_t workload_d();
 suseconds_t workload_e();
-
-void allocate_or_free(void* pointers[], int length, int* pointer_index, int free, int create, int size);
-void free_pointers(void* pointers[], int length, int* pointer_index);
-void basic_tests();
 
 int main(int argc, char*argv[]){
 	double time_a = 0;
@@ -40,10 +37,6 @@ int main(int argc, char*argv[]){
 	printf(output, time_a,time_b,time_c,time_d,time_e);
 }
 
-
-/*
-	returns how long the workload took to execute
-*/
 suseconds_t workload_a(){
 	struct timeval difference;
 	struct timeval start_time;
@@ -62,10 +55,6 @@ suseconds_t workload_a(){
 	return diff;
 }
 
-
-/*
-	returns how long the workload took to execute
-*/
 suseconds_t workload_b(){
 	struct timeval difference;
 	struct timeval start_time;
@@ -87,9 +76,6 @@ suseconds_t workload_b(){
 	return diff;
 }
 
-/*
-	returns how long the workload took to execute
-*/
 suseconds_t workload_c(){
 	struct timeval difference;
 	struct timeval start_time;
@@ -115,10 +101,6 @@ suseconds_t workload_c(){
 	return diff;
 }
 
-
-/*
-	returns how long the workload took to execute
-*/
 suseconds_t workload_d(){
 	struct timeval difference;
 	struct timeval start_time;
@@ -145,9 +127,6 @@ suseconds_t workload_d(){
 	return diff;
 }
 
-/*
-	returns how long the workload took to execute
-*/
 suseconds_t workload_e(){
 	struct timeval difference;
 	struct timeval start_time;
@@ -172,64 +151,4 @@ suseconds_t workload_e(){
 	timersub(&end_time, &start_time, &difference);
 	suseconds_t diff  = difference.tv_usec;
 	return diff;
-}
-
-/*
-	allocates or frees pointers
-*/
-void allocate_or_free(void* pointers[], int length, int* pointer_index, int free, int create, int size){
-	int num = rand() % (free+create);
-	if(num < free){//remove
-		if((*pointer_index) >= 0){
-			free(pointers[(*pointer_index)--]);
-		}
-	}
-	else{//add
-		if((*pointer_index) < length){
-			pointers[++(*pointer_index)] = malloc(size);
-		}
-	}
-}
-
-/*
-	free all of the pointers stored in the array
-*/
-void free_pointers(void* pointers[], int length, int* pointer_index){
-	for(; (*pointer_index)>=0; (*pointer_index)--){
-		free(pointers[*(pointer_index)]);
-	}
-}
-
-
-void basic_tests(){
-	printf("1: should be not enough memory\n");
-	malloc(5000);
-
-	printf("2: should be not enough memory\n");
-	void *pointer = malloc(4096);
-	malloc(1);
-	free(pointer);
-
-	printf("3: should be not allocated by malloc\n");
-	char *p = (char*) malloc(200);
-	free(p+10);
-
-	printf("4: should be not allocated by malloc\n");
-	int *y;
-	free(y);
-
-	printf("5: should be not allocated by malloc\n");
-	int x;
-	free((int*)x);
-
-	printf("6: should be not allocated by malloc\n");
-	p =(char *) malloc(100);
-	free(p);
-	free(p);
-
-	printf("7: should be no error\n");
-	p =(char *) malloc(100);
-	free(p);
-	p =(char *) malloc(100);
-	free(p);
 }
