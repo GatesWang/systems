@@ -6,7 +6,7 @@ void myfree(void *pointer, char *file, int line){
 		printf("not in range\n");
 		return;
 	}
-	for(int i=0; i<4096; i++){
+	for(int i=data_insertion-1; i>=0; i--){
 		if(data[i].ptr == pointer){
 			Metadata metadata = data[i];
 			remove_memory_block(metadata.start, metadata.end);

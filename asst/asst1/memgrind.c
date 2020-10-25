@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <sys/time.h>
-#include "mymalloc.c"
-#include "memgrind.h"
 
 suseconds_t workload_a();
 suseconds_t workload_b();

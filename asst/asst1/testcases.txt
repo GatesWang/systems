@@ -7,7 +7,7 @@ When choosing to free or allocate we specify three parameters.
 
 The probability that we free a pointer is free / (free + create).
 The probability that we create a pointer is create / (free + create).
-If we create we allocate size memory.
+If we create we allocate with size memory.
 
 
 D
