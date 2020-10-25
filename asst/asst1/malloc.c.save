@@ -1,0 +1,119 @@
+
+#include <stdio.h>
+
+#define malloc(x) mymalloc(x,__FILE__,__LINE__)
+#define free(x) myfree(x,__FILE__,__LINE__)
+
+void shift(int start, int end);
+
+typedef struct Metadata{
+	void *ptr;
+	int start;
+	int end;
+	struct Metadata *next;
+} Metadata;
+
+
+static char myblock[4096];
+Metadata *data;
+int memory_insertion = 0;
+
+/*
+	input: a pointer
+	this determines whether the pointer given is a valid address
+	in myblock
+*/
+int is_in_range(void *ptr){
+	void *start = &myblock[0];
+	void *end = &myblock[4096];
+	if(ptr>=start && ptr<=end){
+		return 1;
+	}
+	else{
+		return 0;
+	}
+}
+
+/*
+	This removes a 
+node
+*/
+void remove_node(Metadata *metadata){
+
+	if(metadata->next == NULL){//we are trying to remove the last node
+		Metadata *node = data;
+		while(node->next != metadata){
+			node = node->next;
+		}
+		node.next = NULL;
+	}
+	else{
+		Metadata next = metadata.next;
+		metadata.ptr = next.ptr;
+		metadata.start = next.start;
+		metadata.end = next.end;
+	}
+}
+
+void myfree(void *pointer, char *file, int line){
+	int valid = is_in_range(pointer);
+	if(valid == 0){
+		printf("pointer not in range\n");
+	}
+	Metadata *metadata = data;
+	while(metadata->ptr != pointer){
+		metadata = metadata->next;
+	}
+	int found = (metadata->ptr == pointer);
+	if(found==0){
+		printf("pointer not created by malloc\n");
+	}
+	else{
+		shift(metadata->start,metadata->end);
+		remove_node(metadata);
+	}
+}
+
+/*
+	prints out range in myblock, inclusive
+*/
+void print_memory(int start, int end){
+	for(int i=start; i<=end; i++){
+		printf("%d:%c ",i,myblock[i]);
+	}
+	printf("\n");
+}
+
+/*
+	input: the range of a block, [start, end]
+	this attempts to fill in the block by shifting everything
+	to the right of the block over
+*/
+void shift(int start, int end){
+	int write = start;
+	for(int read=end+1; read<4096; read++){
+		myblock[write] = myblock[read];
+		//print_memory(start,end);
+		write++;
+	}
+}
+
+void * mymalloc(size_t size, char *file, int line){
+	Metadata metadata;
+	metadata.start = memory_insertion;
+	char *pointer = &myblock[memory_insertion];
+	if(memory_insertion + size > 4096){
+		printf("error\n");
+	}
+	else{
+		for(int i=0; i<size; i++){
+			myblock[memory_insertion++] = 'a';
+		}
+		metadata.ptr = pointer;
+		metadata.end = memory_insertion-1;
+		data.next = metadata;
+		data = data.next;
+	}
+	return pointer;
+}
+
