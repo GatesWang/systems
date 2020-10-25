@@ -19,24 +19,7 @@ int main(int argc, char*argv[]){
 	double time_b = 0;
 	double time_c = 0;
 	double time_d = 0;
-	/*
-	int length = 120;
-	void* pointers[length];
-	int pointer_index = -1;
-	int free = 2;
-	int create = 5;
-	int size = 100;
-	*/
 	for(int workload=0; workload<5; workload++){
-	/*
-		print_info("before: ");
-		allocate_or_free(pointers, length, &pointer_index, free, create, size);
-		allocate_or_free(pointers, length, &pointer_index, free, create, size);
-		print_info("after: ");
-		free_pointers(pointers, length, &pointer_index);
-		print_info("after free: ");
-		printf("\n");
-	*/
 		//time_a += workload_a();
 		//time_b += workload_b();
 		//time_c += workload_c();
@@ -135,22 +118,17 @@ suseconds_t workload_d(){
 	int length = 120;
 	void* pointers[length];
 	int pointer_index = -1;
-	int free = 5;
-	int create = 2;
+	int free = 6;
+	int create = 7;
 	int size = 100;
-
-	int memory = memory_used();
-	int ptrs = pointers_stored();
-	printf("before--- memory: %d, pointers: %d\n", memory, ptrs);
 
 	for(int i=0; i<240; i++){
 		allocate_or_free(pointers, length, &pointer_index, free, create, size);
 	}
-	//free_pointers(pointers, length, pointer_index);
+	print_info("before: ");
+	free_pointers(pointers, length, &pointer_index);
+	print_info("after: ");
 
-	memory = memory_used();
-	ptrs = pointers_stored();
-	printf("after--- memory: %d, pointers: %d\n", memory, ptrs);
 
 	gettimeofday(&end_time, NULL);
 	timersub(&end_time, &start_time, &difference);
