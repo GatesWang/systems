@@ -23,6 +23,7 @@ int memory_insertion = 0;
 int data_insertion = 0;
 
 int is_in_range(void *ptr);
+void print_info(char* string);
 
 void remove_memory_block(int start, int end);
 void remove_data_at_index(int index);
@@ -63,14 +64,6 @@ void* mymalloc(size_t size, char *file, int line){
 	}
 }
 
-int memory_used(){
-	return memory_insertion;
-}
-
-int pointers_stored(){
-	return data_insertion;
-}
-
 /*
 	input: a pointer
 	this determines whether the pointer given is a valid address
@@ -85,16 +78,6 @@ int is_in_range(void *ptr){
 	else{
 		return 0;
 	}
-}
-
-/*
-	prints out range in myblock, inclusive
-*/
-void print_memory(int start, int end){
-	for(int i=start; i<=end; i++){
-		printf("%d:%c ",i,myblock[i]);
-	}
-	printf("\n");
 }
 
 /*
@@ -120,4 +103,8 @@ void remove_data_at_index(int index){
 		data[write++] = data[read];
 	}
 	data_insertion--;
+}
+
+void print_info(char* string){
+	printf("%s memory: %d, pointers: %d\n", string, memory_insertion, data_insertion);
 }

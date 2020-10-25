@@ -8,30 +8,36 @@ suseconds_t workload_a();
 suseconds_t workload_b();
 suseconds_t workload_c();
 suseconds_t workload_d();
+suseconds_t workload_e();
 
 void allocate_or_free(void* pointers[], int length, int* pointer_index, int free, int create, int size);
 void free_pointers(void* pointers[], int length, int* pointer_index);
 void basic_tests();
-void print_info(char* string);
 
 int main(int argc, char*argv[]){
 	double time_a = 0;
 	double time_b = 0;
 	double time_c = 0;
 	double time_d = 0;
-	for(int workload=0; workload<5; workload++){
-		//time_a += workload_a();
-		//time_b += workload_b();
-		//time_c += workload_c();
+	double time_e = 0;
+
+	for(int workload=0; workload<50; workload++){
+		time_a += workload_a();
+		time_b += workload_b();
+		time_c += workload_c();
 		time_d += workload_d();
+
+		time_e += workload_e();
+		printf("\n");
 	}
 
 	time_a = time_a/50;
 	time_b = time_b/50;
 	time_c = time_c/50;
 	time_d = time_d/50;
-	char output[] ="workload a: %f\nworkload b: %f\nworkload c: %f\nworkload d: %f\n";
-	printf(output, time_a,time_b,time_c,time_d);
+	time_e = time_e/50;
+	char output[] ="workload a: %f\nworkload b: %f\nworkload c: %f\nworkload d: %f\nworkload e: %f\n";
+	printf(output, time_a,time_b,time_c,time_d,time_e);
 }
 
 
@@ -49,6 +55,7 @@ suseconds_t workload_a(){
 		free(ptr);
 	}
 
+	print_info("workload a: ");
 	gettimeofday(&end_time, NULL);
 	timersub(&end_time, &start_time, &difference);
 	suseconds_t diff  = difference.tv_usec;
@@ -73,6 +80,7 @@ suseconds_t workload_b(){
 		free(pointers[i]);
 	}
 
+	print_info("workload b: ");
 	gettimeofday(&end_time, NULL);
 	timersub(&end_time, &start_time, &difference);
 	suseconds_t diff  = difference.tv_usec;
@@ -98,6 +106,8 @@ suseconds_t workload_c(){
 	for(int i=0; i<240; i++){
 		allocate_or_free(pointers, length, &pointer_index, free, create, size);
 	}
+	print_info("workload c: ");
+	free_pointers(pointers, length, &pointer_index);
 
 	gettimeofday(&end_time, NULL);
 	timersub(&end_time, &start_time, &difference);
@@ -118,16 +128,15 @@ suseconds_t workload_d(){
 	int length = 120;
 	void* pointers[length];
 	int pointer_index = -1;
-	int free = 6;
-	int create = 7;
-	int size = 100;
+	int free = 7;
+	int create = 12;
+	int size = 1;
 
 	for(int i=0; i<240; i++){
 		allocate_or_free(pointers, length, &pointer_index, free, create, size);
 	}
-	print_info("before: ");
+	print_info("workload d: ");
 	free_pointers(pointers, length, &pointer_index);
-	print_info("after: ");
 
 
 	gettimeofday(&end_time, NULL);
@@ -137,7 +146,36 @@ suseconds_t workload_d(){
 }
 
 /*
-	allocates pointers
+	returns how long the workload took to execute
+*/
+suseconds_t workload_e(){
+	struct timeval difference;
+	struct timeval start_time;
+	struct timeval end_time;
+	gettimeofday(&start_time, NULL);
+
+	int length = 120;
+	void* pointers[length];
+	int pointer_index = -1;
+	int free = 12;
+	int create = 7;
+	int size = 300;
+
+	for(int i=0; i<240; i++){
+		allocate_or_free(pointers, length, &pointer_index, free, create, size);
+	}
+	print_info("workload e: ");
+	free_pointers(pointers, length, &pointer_index);
+
+
+	gettimeofday(&end_time, NULL);
+	timersub(&end_time, &start_time, &difference);
+	suseconds_t diff  = difference.tv_usec;
+	return diff;
+}
+
+/*
+	allocates or frees pointers
 */
 void allocate_or_free(void* pointers[], int length, int* pointer_index, int free, int create, int size){
 	int num = rand() % (free+create);
@@ -161,6 +199,7 @@ void free_pointers(void* pointers[], int length, int* pointer_index){
 		free(pointers[*(pointer_index)]);
 	}
 }
+
 
 void basic_tests(){
 	printf("1: should be not enough memory\n");
@@ -193,10 +232,4 @@ void basic_tests(){
 	free(p);
 	p =(char *) malloc(100);
 	free(p);
-}
-
-void print_info(char* string){
-	int memory = memory_used();
-	int pointers = pointers_stored();
-	printf("%s memory: %d, pointers: %d\n",string, memory, pointers);
 }
