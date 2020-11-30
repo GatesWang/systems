@@ -1,0 +1,23 @@
+temp/a/a-a.txt
+abcd hello abcd hello hi hello abcd got
+
+temp/a/a-2.txt
+derp derp hi abcd abcd hello
+
+temp/b/b-1.txt
+abcd hello abcd hello hi hello abcd got
+abcd hello abcd hello hi hello abcd got
+abcd hello abcd hello hi hello abcd got
+
+temp/b/b-2.txt
+abcd hello abcd hello hi hello abcd got
+abcd hello abcd hello hi hello abcd got
+derp derp hi abcd abcd hello
+derp derp hi abcd abcd hello
+abcd hello abcd hello hi hello abcd got
+
+temp/b/c/c-2.txt
+hi hi hi abcd the the the hi apple
+
+temp/b/c/c-1.txt
+hi hello brother the sky is blue hahah. I don't know.
