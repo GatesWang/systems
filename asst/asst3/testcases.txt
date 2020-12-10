@@ -1,0 +1,67 @@
+GOOD CASES
+REG|13|Knock, Knock.|
+			REG|12|Who's there?|
+REG|7|set up.|
+			REG|12|set up, who?|
+REG|10|punchline!|
+			REG|12|set up, who?|
+
+REG|13|Knock, Knock.|
+			REG|12|Who's there?|
+REG|7|set up.|
+			REG|12|set up, who?|
+REG|10|punchline!|
+			REG|4|sad!|
+
+
+LENGTH ERRORS
+REG|13|Knock, Knock.|
+			REG|12|Who's there?|
+REG|7|set up.|
+			REG|12|abc|
+ERR|M3LN|
+
+
+REG|13|Knock, Knock.|
+			REG|12|Who's there?|
+REG|7|set up.|
+			REG|5|set up, who?|
+ERR|M3LN|
+
+
+CONTENT ERRORS
+REG|13|Knock, Knock.|
+			REG|11|Who's there|
+ERR|M1CT|
+
+
+REG|13|Knock, Knock.|
+			REG|12|Who's there?|
+REG|7|set up.|
+			REG|5|abcde|
+ERR|M3CT|
+
+
+REG|13|Knock, Knock.|
+			REG|12|Who's there?|
+REG|7|set up.|
+			REG|5|set up, who?|
+REG|10|punchline!|
+			REG|3|sad|
+ERR|M5CT|
+
+
+
+ERROR MESSAGES
+REG|13|Knock, Knock.|
+			ERR|M0LN|
+
+ 
+REG|13|Knock, Knock.|
+			ERR|AB|
+error is too short
+
+
+REG|13|Knock, Knock.|
+			ERR|ABBCs|
+error is too long
