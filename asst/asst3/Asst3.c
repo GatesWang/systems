@@ -13,11 +13,30 @@
 #define KNOCK "Knock, knock."
 #define WHO "Who's there?"
 #define SETUP "set up."
+#define SETUPWHO "set up, who?"
 #define PUNCH "punchline!"
 
 char * message_type = NULL;
 char * message = NULL;
 char * message_length = NULL;
+int sockfd, newsockfd, error;
+
+void send_error(int sockfd, char * error_code){
+	char * error_message = (char*) malloc(sizeof(char) * 10);
+	error_message[0] = '\0';
+	sprintf(error_message, "ERR|%s|", error_code);
+	write(sockfd, error_message, 9);
+	close(sockfd);
+	exit(1);
+}
+
+int indexOf(char *string, char c){
+	for(int i=0; i<strlen(string); i++){
+		if(string[i] == c)
+			return i;
+	}
+	return -1;
+}
 
 char* substring(const char *source, int start, int n){
 	char *destination = (char*) malloc(sizeof(char) * (n+1));
@@ -28,7 +47,7 @@ char* substring(const char *source, int start, int n){
         source++;
         n--;
     }
-	*current = '\0';
+ 	*current = '\0';
 	return destination;
 }
 
@@ -37,6 +56,39 @@ void check_error(int error){
 		printf("There was an error\n");
 		exit(1);
 	}
+}
+
+int checkLength(char * error_code){
+	int last_index = strlen(message)-1;
+
+	if(strcmp(message_type,"ERR")==0){
+		last_index = 4;
+	}
+
+	for(int i=0; i<last_index; i++){
+		if(message[i] == '|'){// '|' appears early
+			if(strcmp(message_type,"REG")==0){
+				//printf("message is too short\n");
+				send_error(newsockfd, error_code);
+			}
+			else if(strcmp(message_type,"ERR")==0){
+				printf("error is too short\n");
+			}
+			return -1;
+		}
+	}
+
+	if(message[last_index] != '|'){// '|' should be here
+		if(strcmp(message_type,"REG")==0){
+			//printf("message is too long\n");
+			send_error(newsockfd, error_code);
+		}
+		else if(strcmp(message_type,"ERR")==0){
+			printf("error is too long\n");
+		}
+		return -1;
+	}
+	return 1;
 }
 /*
 	Read until a '|' is encountered. This will give you the message type.
@@ -91,7 +143,7 @@ char* readInput(int newsockfd){
 	if(message_type == NULL){
 		message_type = substring(result, 0, delim1);
 		if(strcmp(message_type, "ERR")==0){
-			message = substring(result, delim1+1, delim2-delim1-1);
+			message = substring(result, delim1+1, delim2-delim1);
 			return result;
 		}
 	}
@@ -117,6 +169,7 @@ char* readInput(int newsockfd){
 		printf("given length: %s, acutal length: %ld\n", message_length, strlen(message));
 		printf("message: %s\n", message);
 	}
+
 	return result;
 }
 /*
@@ -133,23 +186,13 @@ char * convertToKjj(char * string){
 	return kjj;
 }
 
-/*
-	converts an error message to Kjj format
-*/
-char * convertToKjjError(char * string){
-	char * kjj = malloc(sizeof(char) * (3 + strlen(string)) );
-	sprintf(kjj,"ERR|%s|", string);
-	return kjj;
-}
-
-void send_error(int sockfd, char * error_message){
-	write(sockfd, error_message, 4);
-	close(sockfd);
-	exit(1);
-}
 
 int main(int argc, char*argv[]){
-	int sockfd, newsockfd, error;
+	if(argc<2){
+		printf("You did not enter the port number\n");
+		exit(1);
+	}
+
 	struct addrinfo *addr_list;
 	struct addrinfo *addr;
 	struct addrinfo hints;
@@ -172,49 +215,74 @@ int main(int argc, char*argv[]){
 	check_error(error);
 	error = listen(sockfd, BACKLOG);
 	check_error(error);
-	newsockfd = accept(sockfd, NULL, NULL);
-	check_error(newsockfd);
 
-	char * knock = convertToKjj(KNOCK);
-//	write(newsockfd, knock, strlen(knock));
+	while(1){
+		newsockfd = accept(sockfd, NULL, NULL);
+		check_error(newsockfd);
 
-	char* result = readInput(newsockfd);
-	int length = strlen(message);
-	printf("message: %s\n", message);
+		char * knock = convertToKjj(KNOCK);
+		write(newsockfd, knock, strlen(knock));
 
-	//send ERR message if the REG message received is improper
-	if(strcmp(message_type, "REG") == 0){
-		int i;
-		for(i=0; i<length-1; i++){
-			if(message[i] == '|'){// '|' appears early
-				send_error(newsockfd, "M1LN");
-			}
-		}
-		if(message[length-1] != '|'){
-			send_error(newsockfd, "M1LN");// '|' should be here
-		}
-		if(strcmp(message, WHO)!=0){
+		char* result = readInput(newsockfd);
+		int length_ok = checkLength("M1LN");
+		char * sub = substring(message, 0, strlen(message)-1);
+		int content_ok = (strcmp(sub, WHO)==0);
+		int reg = strcmp(message_type, "REG") == 0;
+		int err = strcmp(message_type,"ERR") == 0;
+
+		if(reg && !content_ok){//send ERR message
 			send_error(newsockfd, "M1CT");
 		}
-	}
-	else if(strcmp(message_type, "ERR") == 0){//we recieved an error, so exit
-		char * converted_error = convertToKjjError(message);
-		if(strlen(message)!=4){
-			printf("error code is invalid");
+		else if(err){//receive ERR message
+			exit(1);
 		}
-		else if(strcmp(converted_error, result) !=0){
- 			printf("error code format is invalid: %s, should be: %s\n", result, converted_error);
+		else if(!reg && !err){//message_type is invalid
+			send_error(newsockfd, "M1FT");
+			exit(1);
 		}
-		else{
- 			printf("recieved error: %s\n", message);
+
+		char * set = convertToKjj(SETUP);
+		write(newsockfd, set, strlen(set));
+
+		result = readInput(newsockfd);
+		length_ok = checkLength("M3LN");
+		sub = substring(message, 0, strlen(message)-1);
+		content_ok = (strcmp(sub, SETUPWHO)==0);
+		reg = strcmp(message_type, "REG") == 0;
+		err = strcmp(message_type,"ERR") == 0;
+
+		if(reg && !content_ok){//send ERR message
+			send_error(newsockfd, "M3CT");
+		}
+		else if(err){//receive ERR message
+			exit(1);
+		}
+		else if(!reg && !err){//message_type is invalid
+			send_error(newsockfd, "M3FT");
+			exit(1);
+		}
+
+		char * punch = convertToKjj(PUNCH);
+		write(newsockfd, punch, strlen(punch));
+
+		result = readInput(newsockfd);
+		length_ok = checkLength("M5LN");
+		char last_char = message[strlen(message)-2];
+		char * punctuation = "!?.";
+		content_ok = indexOf(punctuation, last_char) != -1;
+		reg = strcmp(message_type, "REG") == 0;
+		err = strcmp(message_type,"ERR") == 0;
+
+		if(reg && !content_ok){//send ERR message
+			send_error(newsockfd, "M5CT");
+		}
+		else if(err){//receive ERR message
+			exit(1);
+		}
+		else if(!reg && !err){//message_type is invalid
+			send_error(newsockfd, "M5FT");
 			exit(1);
 		}
 	}
-	else{
-		//send error because the message recieved was invalid, then exit
-		send_error(newsockfd, "M1FT");
-		exit(1);
-	}
-
 	return 0;
 }
